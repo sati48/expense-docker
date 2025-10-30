@@ -6,28 +6,37 @@ services:
       dockerfile: docker/mysql/Dockerfile
     container_name: expense-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: expense_db
-      MYSQL_USER: expense_user
-      MYSQL_PASSWORD: expense_password
+      MYSQL_ROOT_PASSWORD: ExpenseApp@1
+      MYSQL_DATABASE: transactions
+      MYSQL_USER: expense
+      MYSQL_PASSWORD: ExpenseApp@1
     volumes:
       - mysql-data:/var/lib/mysql
     ports:
       - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
     container_name: expense-backend
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy    # This ensures MySQL is ready
     environment:
       DB_HOST: mysql
-      DB_USER: expense_user
-      DB_PASSWORD: expense_password
-      DB_NAME: expense_db
+      DB_USER: expense
+      DB_PASSWORD: ExpenseApp@1
+      DB_DATABASE: transactions
     ports:
       - "8080:8080"
+    restart: unless-stopped          # Add restart policy
+
   frontend:
     build:
       context: .
