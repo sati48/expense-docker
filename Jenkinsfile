@@ -1,44 +1,26 @@
 pipeline {
-    agent any
-    
-    environment {
-        target_vm = "ec2-user@54.90.83.183"
-    }
-    
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/sati48/expense-docker.git'
-            }
-        }
+  agent any
 
-        stage('Build Docker Images') {
-            steps {
-                sh 'docker-compose build'
-            }
-        }
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'main', url: 'https://github.com/sati48/expense-docker.git'
+      }
+    }
 
-        stage('Deploy to VM') {
-            steps {
-                sshagent(['expense-vm-ssh']) {
-                    sh '''
-                    ssh - o StrictHostKeyChecking = no $target_vm "
-                            cd ~/expense-docker &&
-                    docker - compose down &&
-                        docker - compose up - d--build
-                    "
-                    '''
-                }
-            }
+    stage('Build & Deploy') {
+      steps {
+        sshagent(['ec2-deploy']) {
+          sh '''
+          ssh -o StrictHostKeyChecking=no jenkins@54.90.83.183 "
+            cd /home/ec2-user/expense-docker &&
+            git pull &&
+            docker compose down &&
+            docker compose up -d --build
+          "
+          '''
         }
+      }
     }
-    
-    post {
-        success {
-            echo "✅ Deployment successful! Expense app is live on the target VM."
-        }
-        failure {
-            echo "❌ Deployment failed. Check console logs for details."
-        }
-    }
+  }
 }
