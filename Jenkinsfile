@@ -12,7 +12,7 @@ pipeline {
       steps {
         sshagent(['expense_vm_ssh']) {
           sh '''
-          ssh -o StrictHostKeyChecking=no ec2-user@54.90.83.183> "
+          ssh -o StrictHostKeyChecking=no ec2-user@98.81.128.66 "
             cd /home/ec2-user/expense-docker &&
             git pull &&
             docker compose down &&
