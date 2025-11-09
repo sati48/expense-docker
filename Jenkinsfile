@@ -10,7 +10,7 @@ pipeline {
 
     stage('Build & Deploy') {
       steps {
-        sshagent(['expense_vm_ssh']) {
+        sshagent(['ec2-user']) {
           sh '''
           ssh -o StrictHostKeyChecking=no ec2-user@98.81.128.66 "
             cd /home/ec2-user/expense-docker &&
